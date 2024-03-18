@@ -5,8 +5,10 @@
 //  Created by Douglas Adams on 12/20/21.
 //
 
-import Foundation
 import Combine
+import Foundation
+import SwiftUI
+
 import XCGLogger
 import ObjcExceptionBridging
 
@@ -15,6 +17,25 @@ import ObjcExceptionBridging
 
 //public typealias Log = (_ msg: String, _ level: LogLevel, _ function: StaticString, _ file: StaticString, _ line: Int) -> Void
 //public typealias LogProperty = (_ msg: String, _ level: LogLevel) -> Void
+
+// struct & enums for use in the Log Viewer
+public struct LogLine: Identifiable, Equatable {
+  public var id = UUID()
+  public var text: String
+  public var color: Color
+  
+  public init(text: String, color: Color = .primary) {
+    self.text = text
+    self.color = color
+  }
+}
+
+public enum LogFilter: String, CaseIterable {
+  case none
+  case includes
+  case excludes
+  case prefix
+}
 
 public var logEntries: AsyncStream<LogEntry> {
   AsyncStream { continuation in _logStream = { logEntry in continuation.yield(logEntry) }

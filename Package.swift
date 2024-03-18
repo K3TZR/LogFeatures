@@ -4,11 +4,11 @@
 import PackageDescription
 
 let package = Package(
-  name: "LoggingFeatures",
+  name: "LogFeatures",
   platforms: [.macOS(.v14),],
   
   products: [
-    .library(name: "XCGWrapper", targets: ["XCGWrapper"]),
+    .library(name: "XCGLogFeature", targets: ["XCGLogFeature"]),
   ],
 
   dependencies: [
@@ -19,8 +19,8 @@ let package = Package(
   
   // --------------- Modules ---------------
   targets: [
-    // XCGWrapper
-    .target( name: "XCGWrapper", dependencies: [
+    // LogFeature
+    .target( name: "XCGLogFeature", dependencies: [
       .product(name: "XCGLogger", package: "XCGLogger"),
       .product(name: "ObjcExceptionBridging", package: "XCGLogger"),
     ]),
