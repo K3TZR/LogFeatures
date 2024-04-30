@@ -19,7 +19,7 @@ import ObjcExceptionBridging
 //public typealias LogProperty = (_ msg: String, _ level: LogLevel) -> Void
 
 // struct & enums for use in the Log Viewer
-public struct LogLine: Identifiable, Equatable {
+public struct LogLine: Identifiable, Equatable, Sendable {
   public var id = UUID()
   public var text: String
   public var color: Color

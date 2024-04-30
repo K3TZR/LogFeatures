@@ -19,7 +19,7 @@ let package = Package(
   
   // --------------- Modules ---------------
   targets: [
-    // LogFeature
+    // XCGLogFeature
     .target( name: "XCGLogFeature", dependencies: [
       .product(name: "XCGLogger", package: "XCGLogger"),
       .product(name: "ObjcExceptionBridging", package: "XCGLogger"),
