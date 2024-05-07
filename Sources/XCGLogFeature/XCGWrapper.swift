@@ -92,14 +92,14 @@ private var _logAlertStream: (LogEntry) -> Void = { _ in }
 ///   - info: a tuple of domain and app name
 ///   - folderUrl: the URL of the log folder
 /// - Returns: the URL of the log file (or nil)
-public func setupLogFolder(_ info: (domain: String, appName: String), _ folderUrl: URL) -> URL? {
+public func setupLogFolder(_ domain: String, _ appName: String, _ folderUrl: URL) -> URL? {
   // try to create it
   do {
     try FileManager().createDirectory( at: folderUrl, withIntermediateDirectories: true, attributes: nil)
   } catch {
     return nil
   }
-  return folderUrl.appending(path: info.appName + ".log")
+  return folderUrl.appending(path: appName + ".log")
 }
 
 /// Place log messages into the Log stream
