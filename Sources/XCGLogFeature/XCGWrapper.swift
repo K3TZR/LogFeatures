@@ -12,10 +12,37 @@ import SwiftUI
 import XCGLogger
 import ObjcExceptionBridging
 
+
+extension Notification.Name {
+  public static let logAlertNotification = Notification.Name("LogAlertNotification")
+}
+
+
+
 // ----------------------------------------------------------------------------
 // MARK: - Public properties
 
-//public typealias Log = (_ msg: String, _ level: LogLevel, _ function: StaticString, _ file: StaticString, _ line: Int) -> Void
+public func log(_ msg: String, _ level: XCGLogger.Level, _ function: StaticString, _ file: StaticString, _ line: Int) {
+  //    _logStream( LogEntry(msg, level, function, file, line) )
+  
+  switch level {
+    
+  case .debug:    XCGWrapper.shared.log?.debug(msg, functionName: function, fileName: file, lineNumber: line)
+  case .info:     XCGWrapper.shared.log?.info(msg, functionName: function, fileName: file, lineNumber: line)
+  case .warning:  XCGWrapper.shared.log?.warning(msg, functionName: function, fileName: file, lineNumber: line)
+  case .error:    XCGWrapper.shared.log?.error(msg, functionName: function, fileName: file, lineNumber: line)
+  case .verbose, .notice, .severe, .alert, .emergency, .none:
+    XCGWrapper.shared.log?.error("Invalid Log Level: " + msg, functionName: function, fileName: file, lineNumber: line)
+  }
+  
+  if level == .warning || level == .error {
+    NotificationCenter.default.post(name: Notification.Name.logAlertNotification, object: LogEntry(msg, level, function, file, line))
+  }
+}
+
+//public typealias XCGWrapperLog = Log
+//public typealias Log = (_ msg: String, _ level: XCGLogger.Level, _ function: StaticString, _ file: StaticString, _ line: Int) -> Void
+
 //public typealias LogProperty = (_ msg: String, _ level: LogLevel) -> Void
 
 // struct & enums for use in the Log Viewer
@@ -37,13 +64,13 @@ public enum LogFilter: String, CaseIterable {
   case prefix
 }
 
-public var logEntries: AsyncStream<LogEntry> {
-  AsyncStream { continuation in _logStream = { logEntry in continuation.yield(logEntry) }
-    continuation.onTermination = { @Sendable _ in } }}
+//public var logEntries: AsyncStream<LogEntry> {
+//  AsyncStream { continuation in _logStream = { logEntry in continuation.yield(logEntry) }
+//    continuation.onTermination = { @Sendable _ in } }}
 
-public var logAlerts: AsyncStream<LogEntry> {
-  AsyncStream { continuation in _logAlertStream = { logEntry in continuation.yield(logEntry) }
-    continuation.onTermination = { @Sendable _ in } }}
+//public var logAlerts: AsyncStream<LogEntry> {
+//  AsyncStream { continuation in _logAlertStream = { logEntry in continuation.yield(logEntry) }
+//    continuation.onTermination = { @Sendable _ in } }}
 
 public struct LogEntry: Equatable {
   public static func == (lhs: LogEntry, rhs: LogEntry) -> Bool {
@@ -57,12 +84,12 @@ public struct LogEntry: Equatable {
   }
   
   public var msg: String
-  public var level: LogLevel
+  public var level: XCGLogger.Level
   public var function: StaticString
   public var file: StaticString
   public var line: Int
   
-  public init(_ msg: String, _ level: LogLevel, _ function: StaticString, _ file: StaticString, _ line: Int ) {
+  public init(_ msg: String, _ level: XCGLogger.Level, _ function: StaticString, _ file: StaticString, _ line: Int ) {
     self.msg = msg
     self.level = level
     self.function = function
@@ -71,17 +98,17 @@ public struct LogEntry: Equatable {
   }
 }
 
-public enum LogLevel: String, CaseIterable {
-    case debug
-    case info
-    case warning
-    case error
-}
+//public enum LogLevel: String, CaseIterable {
+//    case debug
+//    case info
+//    case warning
+//    case error
+//}
 
 // ----------------------------------------------------------------------------
 // MARK: - Private properties
 
-private var _logStream: (LogEntry) -> Void = { _ in }
+//private var _logStream: (LogEntry) -> Void = { _ in }
 private var _logAlertStream: (LogEntry) -> Void = { _ in }
 
 // ----------------------------------------------------------------------------
@@ -92,15 +119,15 @@ private var _logAlertStream: (LogEntry) -> Void = { _ in }
 ///   - info: a tuple of domain and app name
 ///   - folderUrl: the URL of the log folder
 /// - Returns: the URL of the log file (or nil)
-public func setupLogFolder(_ domain: String, _ appName: String, _ folderUrl: URL) -> URL? {
-  // try to create it
-  do {
-    try FileManager().createDirectory( at: folderUrl, withIntermediateDirectories: true, attributes: nil)
-  } catch {
-    return nil
-  }
-  return folderUrl.appending(path: appName + ".log")
-}
+//public func setupLogFolder(_ domain: String, _ appName: String, _ folderUrl: URL) -> URL? {
+//  // try to create it
+//  do {
+//    try FileManager().createDirectory( at: folderUrl, withIntermediateDirectories: true, attributes: nil)
+//  } catch {
+//    return nil
+//  }
+//  return folderUrl.appending(path: appName + ".log")
+//}
 
 /// Place log messages into the Log stream
 /// - Parameters:
@@ -109,45 +136,47 @@ public func setupLogFolder(_ domain: String, _ appName: String, _ folderUrl: URL
 ///   - function: the function originating the entry
 ///   - file: the file originating the entry
 ///   - line: the line originating the entry
-public func log(_ msg: String, _ level: LogLevel, _ function: StaticString, _ file: StaticString, _ line: Int) {
-  _logStream( LogEntry(msg, level, function, file, line) )
-  if level == .warning || level == .error {
-    _logAlertStream(LogEntry(msg, level, function, file, line) )
-  }
-}
+//public func log(_ msg: String, _ level: LogLevel, _ function: StaticString, _ file: StaticString, _ line: Int) {
+//  _logStream( LogEntry(msg, level, function, file, line) )
+//
+//  switch level {
+//    
+//  case .debug:    XCGWrapper.log.debug(LogEntry(msg, level, function, file, line))
+//  case .info:     XCGWrapper.log.info(LogEntry(msg, level, function, file, line))
+//  case .warning:  XCGWrapper.log.warning(LogEntry(msg, level, function, file, line))
+//  case .error:    XCGWrapper.log.error(LogEntry(msg, level, function, file, line))
+//  }
+//
+//  if level == .warning || level == .error {
+//    _logAlertStream(LogEntry(msg, level, function, file, line) )
+//  }
+//}
 
 final public class XCGWrapper {
   // ----------------------------------------------------------------------------
+  // MARK: - Singleton
+  
+  public static var shared = XCGWrapper()
+  private init() {}
+  
+  // ----------------------------------------------------------------------------
   // MARK: - Public properties
   
-  public let log: XCGLogger
+  public var log: XCGLogger?
   
   // ----------------------------------------------------------------------------
   // MARK: - Private properties
     
-  private var _cancellable: AnyCancellable?
-  private var _folderUrl: URL!
-  private var _log: XCGLogger!
+//  private var _cancellable: AnyCancellable?
+//  private var _folderUrl: URL!
 
   private let kMaxLogFiles: UInt8  = 10
   private let kMaxTime: TimeInterval = 60 * 60 // 1 Hour
   
   // ----------------------------------------------------------------------------
-  // MARK: - INitialization
-  
-  public init(logLevel: LogLevel = .debug, group: String? = nil) {
-
-    var xcgLogLevel: XCGLogger.Level
-    switch logLevel {
-    case .debug:
-      xcgLogLevel = XCGLogger.Level.debug
-    case .info:
-      xcgLogLevel = XCGLogger.Level.info
-    case .warning:
-      xcgLogLevel = XCGLogger.Level.warning
-    case .error:
-      xcgLogLevel = XCGLogger.Level.error
-    }
+  // MARK: - Public methods
+    
+  public func setup(logLevel: XCGLogger.Level = .debug, group: String? = nil) {
     
     let info: (domain: String, appName: String) = {
       let bundleIdentifier = Bundle.main.bundleIdentifier!
@@ -156,27 +185,38 @@ final public class XCGWrapper {
       let domain = String(bundleIdentifier.prefix(upTo: separator))
       return (domain, appName)
     }()
+
+    func setupLogFolder(_ info: (domain: String, appName: String), _ group: String?) -> URL? {
+      var folderUrl: URL!
+
+      if group == nil {
+        // the app is using a normal Container
+        let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        folderUrl = url.appending(path: "Logs")
+
+      } else {
+        // the app is using a Group Container
+        let url = FileManager().containerURL(forSecurityApplicationGroupIdentifier: group!)
+        folderUrl  = url?.appending(path: "Library/Application Support/Logs")
+      }
+      // try to create it
+      do {
+        try FileManager().createDirectory( at: folderUrl, withIntermediateDirectories: true, attributes: nil)
+      } catch {
+        return nil
+      }
+      return folderUrl.appending(path: info.appName + ".log")
+    }
     
     log = XCGLogger(identifier: info.appName, includeDefaultDestinations: false)
     
-    if group == nil {
-      // the app is using a normal Container
-      let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-      _folderUrl = url.appending(path: "Logs")
-
-    } else {
-      // the app is using a Group Container
-      let url = FileManager().containerURL(forSecurityApplicationGroupIdentifier: group!)
-      _folderUrl  = url?.appending(path: "Library/Application Support/Logs")
-    }
-
 #if DEBUG
     // for DEBUG only
     // Create a destination for the system console log (via NSLog)
     let systemDestination = AppleSystemLogDestination(identifier: info.appName + ".systemDestination")
     
     // Optionally set some configuration options
-    systemDestination.outputLevel           = xcgLogLevel
+    systemDestination.outputLevel           = logLevel
     systemDestination.showFileName          = false
     systemDestination.showFunctionName      = false
     systemDestination.showLevel             = true
@@ -185,18 +225,18 @@ final public class XCGWrapper {
     systemDestination.showThreadName        = false
     
     // Add the destination to the logger
-    log.add(destination: systemDestination)
+    log!.add(destination: systemDestination)
 #endif
     
     // Get / Create a file log destination
-    if let logs = setupLogFolder(info, _folderUrl) {
+    if let logs = setupLogFolder(info, group) {
       let fileDestination = AutoRotatingFileDestination(writeToFile: logs,
                                                         identifier: info.appName + ".autoRotatingFileDestination",
                                                         shouldAppend: true,
                                                         appendMarker: "- - - - - App was restarted - - - - -")
       
       // Optionally set some configuration options
-      fileDestination.outputLevel             = xcgLogLevel
+      fileDestination.outputLevel             = logLevel
       fileDestination.showDate                = true
       fileDestination.showFileName            = false
       fileDestination.showFunctionName        = false
@@ -211,30 +251,30 @@ final public class XCGWrapper {
       fileDestination.logQueue = XCGLogger.logQueue
       
       // Add the destination to the logger
-      log.add(destination: fileDestination)
+      log!.add(destination: fileDestination)
       
       // Add basic app info, version info etc, to the start of the logs
-      log.logAppDetails()
+      log!.logAppDetails()
       
       // format the date (only effects the file logging)
       let dateFormatter = DateFormatter()
       dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss:SSS"
       dateFormatter.locale = Locale.current
-      log.dateFormatter = dateFormatter
+      log!.dateFormatter = dateFormatter
       
-      // subscribe to Log requests
-      Task {
-        for await entry in logEntries {
-          // Log Handler to support XCGLogger
-          switch entry.level {
-            
-          case .debug:    log.debug(entry.msg)
-          case .info:     log.info(entry.msg)
-          case .warning:  log.warning(entry.msg)
-          case .error:    log.error(entry.msg)
-          }
-        }
-      }
+//      // subscribe to Log requests
+//      Task {
+//        for await entry in logEntries {
+//          // Log Handler to support XCGLogger
+//          switch entry.level {
+//            
+//          case .debug:    log.debug(entry.msg)
+//          case .info:     log.info(entry.msg)
+//          case .warning:  log.warning(entry.msg)
+//          case .error:    log.error(entry.msg)
+//          }
+//        }
+//      }
 
     } else {
       fatalError("Logging failure:, unable to find / create Log folder")
