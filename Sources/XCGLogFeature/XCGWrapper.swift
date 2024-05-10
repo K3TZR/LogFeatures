@@ -261,21 +261,6 @@ final public class XCGWrapper {
       dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss:SSS"
       dateFormatter.locale = Locale.current
       log!.dateFormatter = dateFormatter
-      
-//      // subscribe to Log requests
-//      Task {
-//        for await entry in logEntries {
-//          // Log Handler to support XCGLogger
-//          switch entry.level {
-//            
-//          case .debug:    log.debug(entry.msg)
-//          case .info:     log.info(entry.msg)
-//          case .warning:  log.warning(entry.msg)
-//          case .error:    log.error(entry.msg)
-//          }
-//        }
-//      }
-
     } else {
       fatalError("Logging failure:, unable to find / create Log folder")
     }
